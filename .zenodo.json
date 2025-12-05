@@ -1,0 +1,29 @@
+{
+    "creators": [
+        {
+            "orcid": "0000-0002-1825-0097",
+            "affiliation": "University of Freiburg",
+            "name": "Zeeman, Matthias"
+        },
+    ],
+
+    "title": "(urbanair-dm) ",
+
+    "related_identifiers": [
+        {
+            "scheme": "doi",
+            "identifier": "10.5194/gi-13-393-2024",
+            "relation": "isDocumentedBy",
+            "resource_type": "publication-article"
+        }
+    ],
+
+    "keywords": ["Doppler Lidar"],
+
+    "communities": [
+        {"identifier": "urbisphere"},
+        {"identifier": "urbanair"}
+    ],
+
+    "grants": [{"id":"855005"}]
+}
