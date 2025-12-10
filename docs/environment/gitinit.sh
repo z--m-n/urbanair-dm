@@ -18,6 +18,7 @@ function gitignore {
 		
 	local gi="${gp}/.gitignore"
 	echo "${gi}"
+	if [ ! -f ${gi} ]; then
 	echo -e "# (urbanair-dm) Custom git exclude paths" >> ${gi}
 	echo -e "" >> ${gi}
 	echo -e "## Private assets and runtime outputs" >> ${gi}
@@ -26,6 +27,7 @@ function gitignore {
 	for a in "${ga[@]}"; do
 		echo -e "${a}" >> ${gi}
 	done;
+	fi
 }
 
 for n in "${locs[@]}" ; do
