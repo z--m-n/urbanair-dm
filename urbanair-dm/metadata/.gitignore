@@ -1,0 +1,9 @@
+# (urbanair-dm) Custom git exclude paths
+
+## Private assets and runtime outputs
+_tmp_*
+_run_*
+conf/secrets.toml,
+data/,
+logs/,
+tmp/
