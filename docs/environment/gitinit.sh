@@ -33,7 +33,7 @@ function gitignore {
 for n in "${locs[@]}" ; do
     echo "$n"
 	mkdir -p "${n}";
-	ga=( "conf/secrets.toml", "data/", "logs/", "tmp/" )
+	ga=( "conf/secrets.toml" "data/" "logs/" "tmp/" )
 	gitignore "${n}" "${ga[@]}"
 	
 	for m in "${sublocs[@]}"; do
