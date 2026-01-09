@@ -5,7 +5,7 @@ Data management related to project UrbanAIR
 ## References
 
     
-<span style="font-size:0.5em;">\[1\]  Zeeman, M., Morrison, W., Looschelders, D., Fenner, D., Michoud, V., Foret, G., Grimmond, S., & Christen, A. (2025). Model-aligned wind profiles in Paris, France from 2023-08-20 to 2023-08-22 \[L2\] (v2025.11) \[Data set\]. Zenodo. [https://doi.org/10.5281/zenodo.17950675] </span>
+\[1\]  Zeeman, M., Morrison, W., Looschelders, D., Fenner, D., Michoud, V., Foret, G., Grimmond, S., & Christen, A. (2025). Model-aligned wind profiles in Paris, France from 2023-08-20 to 2023-08-22 \[L2\] (v2025.11) \[Data set\]. Zenodo. [https://doi.org/10.5281/zenodo.17950675]
 
 \[2\] Zeeman, M., Morrison, W., Looschelders, D., Fenner, D., Michoud, V., Foret, G., Grimmond, S., & Christen, A. (2025). Vertical air velocity profiles in Paris, France from 2023-08-20 to 2023-08-23 \[L1\] (v2025.11) \[Data set\]. Zenodo. [https://doi.org/10.5281/zenodo.17950555]
 
