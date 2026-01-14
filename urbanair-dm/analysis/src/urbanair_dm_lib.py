@@ -239,3 +239,52 @@ def plot_da(da, **kwargs):
         .update_layout(margin=dict(l=50, r=200, b=50, t=30, autoexpand=False))
     )
     return fig
+
+
+def ds_plot(plot_ds, **kwargs):
+    """convencience plot"""
+
+    data_var = kwargs["data_var"] if "data_var" in kwargs else "ws"
+    ycoord = kwargs["ycoord"] if "ycoord" in kwargs else ("cell_id", "cell_id")
+
+    sel = (
+        kwargs["sel"]
+        if "sel" in kwargs
+        else dict(
+            channel_id=3,  # ...  model configuration (3=MESONH model)
+            cell_mode=1,  # ... sampling mode (1=half-level)
+            channel_mode=0 if data_var.startswith("w_") else 1,
+        )
+    )
+    isel = (
+        kwargs["isel"]
+        if "isel" in kwargs
+        else dict(
+            cell_id=slice(13, None),  # ... exclude lowest levels
+        )
+    )
+    px_defaults = dict(
+        facet_col_wrap=1,
+        facet_row_spacing=0.05,
+        facet_col_spacing=0.03,
+        facet_col="location",
+    )
+    px_opts = (
+        {**px_defaults, **kwargs["px_opts"]} if "px_opts" in kwargs else px_defaults
+    )
+
+    # select dataarray
+    da = plot_ds[data_var].sel(sel).isel(isel)
+
+    # ... update the y-axis coord
+    if isinstance(ycoord, tuple):
+        da = da.dropna(ycoord[0], how="all")
+        if "cell_z_bounds" in ycoord:
+            da["cell_z_bounds"] = da["cell_z_bounds"].mean(
+                [n for n in ["time", "location"] if n in da.dims]
+            )
+        da = da.set_index(dict([ycoord])).rename(dict([ycoord]))
+        da = da.isel(**{ycoord[1]: ~da[ycoord[1]].isnull()})
+
+    fig = plot_da(da, **px_opts)
+    return fig    
