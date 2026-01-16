@@ -15,7 +15,7 @@ mamba env update -n urbanair312v1 -f environment.yml
 conda activate urbanair312v1
 ```
 
-Install a kernel for jupyter notebooks, in this case within the new environment:
+Create a kernelspec for jupyter notebooks, in this case within the new environment:
 ```bash
 conda activate urbanair312v1
 python3 -m ipykernel install --user --name="urbanair312v1"
@@ -29,6 +29,12 @@ For Paris simulations, the following examples are public:
 - `urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb`
 
 Further instructions are included in these Minimal Working Example notebooks.
+
+Those can be accessed within a browser, for example,
+```bash
+conda activate urbanair312v1
+jupyter notebook urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb
+```
 
 ## Metadata
 For Paris metadata, the examples are currenlty private.
