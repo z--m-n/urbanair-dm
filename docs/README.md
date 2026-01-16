@@ -7,7 +7,7 @@ Python and Jupyter notebook examples for UrbanAir Observations.
 
 ## Setup
 
-Set up your own jupyterlab environement, or use the supplied `environment.yml` file to create the `urbanair312v1` environment:
+Set up your own jupyterlab environement, or use the supplied `environment.yml` (or `environment_optional.yml`) file to create the `urbanair312v1` environment:
 
 ```bash
 mamba create -n urbanair312v1 python="3.12"
@@ -21,11 +21,16 @@ conda activate urbanair312v1
 python3 -m ipykernel install --user --name="urbanair312v1"
 ```
 
+## Data
+
 For Paris simulations, the following examples are public:
 
 - `urbanair-dm/analysis/notebooks/streamline_stats_mwe.ipynb`
 - `urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb`
 
-For Paris metadata, the examples are currenlty private:
+Further instructionsare included in these Minimal Working Example notebooks.
+
+## Metadata
+For Paris metadata, the examples are currenlty private.
 
 ![](assets/metadb_locations.gif)
