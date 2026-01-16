@@ -145,14 +145,110 @@ def input_files(path_list, filename_pattern):
             fn_dict[str(Path(fn).parent)].append(fn)
         fn_dict = dict(fn_dict)
     else:
-        print("Warning: No files found!")
+        #print("Warning: No files found!")
         fn_list, fn_dict = [], {}
 
     print(f"Found {len(fn_list)} files")
 
     return (fn_list, fn_dict)
 
+def get_zenodo_repository(repository_path, respository_or_record_id):
+    import os
+    import subprocess
+    from contextlib import contextmanager
+    from pathlib import Path
+    # requires: pip install zenodo-get
 
+    # in case a list of urls is passed
+    if isinstance(respository_or_record_id, list):
+        for rec in respository_or_record_id:
+            try:
+                # t.b.d. improve error catch
+                get_zenodo_repository(repository_path, rec)
+            except:
+                return(False)
+        return(True)
+
+    # in case a url is passed
+    respository_or_record_id = respository_or_record_id.split('.')[-1]
+    
+    # pip install zenodo-get
+    cmd = ["zenodo_get", respository_or_record_id]
+
+    if Path(repository_path).is_dir() and str(respository_or_record_id).isdigit():
+        fp = Path(repository_path).resolve() / str(respository_or_record_id)
+        fp.mkdir(parents=False, exist_ok=True)
+    else:
+        # t.b.d. use fsspec simple_cache
+        fp = Path(respository_or_record_id)
+
+    @contextmanager
+    def change_directory(directory: str):
+        original_cwd = os.getcwd()
+        os.chdir(directory)
+        try:
+            yield
+        finally:
+            os.chdir(original_cwd)
+
+    if fp.is_dir():
+        with change_directory(fp):
+            subprocess.call(cmd)
+
+def unpack_zenodo_repository(
+    repository_path,
+    respository_or_record_id,
+    repository_file_pattern=["*_data.tar", "*.zarr.zip"],
+    destination_path="../tmp/test/",
+):
+    import shutil
+    import tarfile
+
+    def unpack_or_copy(fp, destination_path, filename_pattern):
+        # archives
+        fn_list, fn_dict = input_files([str(fp)], filename_pattern)
+
+        for fd, fns in fn_dict.items():
+            for fn in fns:
+                fname = Path(fn).name
+                fpart = re.findall(r"^([A-Z]{3})\_(L\d).*?$", fname)
+                if fpart:
+                    fout = Path(destination_path).resolve()
+                    if not Path(destination_path).resolve().is_dir():
+                        return False
+                    fout.mkdir(parents=True, exist_ok=True)
+                    if fout.is_dir():
+                        # print(fname)
+                        # print((f"Copying files to:\n '{fout}'"))
+                        if tarfile.is_tarfile(fn):
+                            with tarfile.open(fn) as f:
+                                f.extractall(path=fout, filter="data")
+                        elif str(fname).endswith("zarr.zip"):
+                            shutil.copy(fn, fout / Path(*fpart[0]) )  # this can be linking also
+
+    # in case a list of urls is passed
+    if isinstance(respository_or_record_id, list):
+        for rec in respository_or_record_id:
+            for fpat in repository_file_pattern:
+                unpack_zenodo_repository(repository_path, rec, fpat, destination_path)
+        return True
+
+    # in case a url is passed
+    respository_or_record_id = respository_or_record_id.split(".")[-1]
+
+    if Path(repository_path).is_dir() and str(respository_or_record_id).isdigit():
+        fp = Path(repository_path).resolve() / str(respository_or_record_id)
+        fp.mkdir(parents=False, exist_ok=True)
+        unpack_or_copy(fp, destination_path, repository_file_pattern)
+    else:
+        # t.b.d. use fsspec simple_cache instead of a fixed directory
+        print(
+            (
+                f"Warning: destination '{repository_path}' does not exist, "
+                f"or argument 'respository_or_record_id' is not valid."
+            )
+        )
+    
 def localstore(filepath, **kwargs):
     """local datastore handler (not for S3/HTTP)"""
 
@@ -287,4 +383,20 @@ def ds_plot(plot_ds, **kwargs):
         da = da.isel(**{ycoord[1]: ~da[ycoord[1]].isnull()})
 
     fig = plot_da(da, **px_opts)
-    return fig    
+    return fig
+
+
+def hello_world():
+    import pandas as pd
+    return( 
+        (
+            f"<p>"
+            f"<font size='4'>"
+            f"<a href='https://github.com/z--m-n/urbanair-dm'>"
+            f" &laquo; &#128517; &#128293; &raquo; <br>"
+            f"{pd.Timestamp.now().floor('s').isoformat()}"
+            f"</a>"
+            f"</font>"
+            f"</p>"
+        )
+    )
