@@ -1,0 +1,135 @@
+### Conda (environment.yml)
+name: urbanair312v1
+
+channels:
+ - conda-forge
+
+dependencies:
+ - python=3.12
+ - ipython
+ - ipykernel
+ ##### IDE
+ - jupyter
+ - jupyterlab
+##### Data Science:
+ - numpy
+ - xarray
+ - pandas
+ - scipy
+ - scikit-learn 
+ ##### IO, files, formats, APIs:
+ - plotly
+ - python-kaleido
+ - ipyevents
+ - ipywidgets
+ - ipyleaflet
+ - datashader
+ - holoviews
+ - geoviews
+ - cartopy
+ - graphviz
+ - nodejs
+ - bokeh
+ - hvplot
+ - altair
+ - folium
+ - colorcet
+ - colorlover
+ - imageio
+ - scikit-image
+ - requests
+ - pycryptodome # Replacement for - pycrypto
+ - graph
+ - panel
+ - toml
+ - tomlkit
+ - asyncssh 
+ - sshfs
+ - s3fs
+-  pyarrow
+ - jinja2
+ - schedule
+ - croniter
+ - sqlalchemy
+ - pymysql
+ - tabulate
+ - mergedeep
+ - dateparser
+ - datefinder
+ - lxml 
+ - beautifulsoup4
+ - geos
+ # - pygeos; now in shapely
+ - proj
+ - gdal
+ - kml2geojson
+ - libgdal
+ - astral
+ - fiona
+ - humanize
+ - cf-plot
+ - cf_xarray
+ - cftime
+ - cfgrib
+ - cfunits
+ - udunits2
+ - nc-time-axis
+ - zarr=<3.0 
+ - netCDF4
+ - h5netcdf
+ - h5py
+ - fsspec
+ - pooch
+ - numcodecs
+ - xarray-datatree
+ - pint-xarray
+ - xarray_leaflet
+ - xskillscore
+ - xarray-datatree
+ # - nco: #  issue with tempest-remap, `conda repoquery whoneeds -c conda-forge tempest-remap`. Install the apt-get version of `nco`.
+ - cdo
+ - python-cdo 
+ - xarray-einstats 
+ - sparse
+ - black 
+ - jupytext
+ - ipytree
+ - isort
+ - nodejs
+ - memory_profiler
+ - diskcache
+ - cachey
+ - cachetools
+ - py7zr
+ - flox
+ - bottleneck
+ - numbagg
+ - natsort
+ - pint
+ - distributed 
+ - dask
+ - dask-labextension 
+ - aiocron
+ - nest-asyncio  
+ - fiona
+ - pyrosm
+ - shapely
+ - openpyxl
+ - xlsxwriter
+ - pytables
+ - psycopg
+ - webcolors
+ - papermill
+ - pytest
+ - nbdime
+ - coreutils
+ ##### PIP
+ - pip
+ - pip:
+    - ipynb
+    - pygrok
+    - pyrle
+    - datetime_glob
+    - zenodo-get    
+
+ 
