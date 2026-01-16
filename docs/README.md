@@ -28,7 +28,7 @@ For Paris simulations, the following examples are public:
 - `urbanair-dm/analysis/notebooks/streamline_stats_mwe.ipynb`
 - `urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb`
 
-Further instructionsare included in these Minimal Working Example notebooks.
+Further instructions are included in these Minimal Working Example notebooks.
 
 ## Metadata
 For Paris metadata, the examples are currenlty private.
