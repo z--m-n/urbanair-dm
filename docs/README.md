@@ -15,7 +15,7 @@ mamba env update -n urbanair312v1 -f environment.yml
 conda activate urbanair312v1
 ```
 
-Create a kernel for jupyter notebooks, in this case within the new environment:
+Install a kernel for jupyter notebooks, in this case within the new environment:
 ```bash
 conda activate urbanair312v1
 python3 -m ipykernel install --user --name="urbanair312v1"
