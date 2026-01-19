@@ -386,6 +386,124 @@ def ds_plot(plot_ds, **kwargs):
     return fig
 
 
+def translate_channels(ds, a="arome", b="system"):
+
+    fun_ds_to_df = lambda x: (
+        x.to_dataframe()  # .isel(system=0, station=0, drop=True)
+        .dropna(subset=dv)
+        .unstack("bounds")
+    )
+
+    dv = ["cell_z_bounds"]
+    dc = ["cell_id"]
+    gb = ["station_id", "system_id", "cell_id"]
+
+    ab_list = ds["channel_id"].attrs["flag_meaning"].split(" ")
+    subset = {}
+    isubset = {
+        "channel_mode": 0,  # stare mode
+        "cell_mode": 2,  # full bounds
+    }
+
+    # height boundaries, as dataarray
+    da = ds.reset_coords(dv)[dv]
+    da = da.unstack("channel").unstack("cell")
+    da = da.sel(subset, drop=True).isel(isubset, drop=True).mean(dim="time")
+
+    # extract a/b channels
+    da1 = da.sel(channel_id=ab_list.index(a))
+    da2 = da.sel(channel_id=ab_list.index(b))
+    df1 = fun_ds_to_df(da1)
+    df2 = fun_ds_to_df(da2)
+
+    cid = []
+    for ig, dg in df2.groupby(level=gb):
+        col1 = ("cell_z_bounds", 0)
+        col2 = ("cell_z_bounds", 1)
+        v0 = dg[col1].tolist()[0]
+        v1 = dg[col2].tolist()[0]
+        # idx = np.logical_or(
+        #    df1[col1].between(v0, v1, inclusive="neither"),
+        #    df1[col2].between(v0, v1, inclusive="neither"),
+        # )
+        idx = (df1[[col1, col2]].mean(axis=1)).between(v0, v1, inclusive="neither")
+        if any(idx):
+            ix = list(
+                dict.fromkeys(df1[idx].index.get_level_values(dc[0]).tolist()).keys()
+            )
+            il = [n for n in ig]
+            iv = getattr(il[2], "tolist", lambda: il[2])()
+            a_d = pd.Series(data=il[0:2] + [ix] , index=gb).to_dict()
+            b_d = pd.Series(data=il[0:2] + [iv] , index=gb).to_dict()
+
+            cid.append({a: a_d, b: b_d})
+
+    # restructure
+    df = pd.concat(
+        [
+            (
+                pd.DataFrame(n)
+                .T.rename_axis("channel_id")
+                .set_index(["station_id", "system_id"], append=True)
+                .reset_index("channel_id")
+                .pivot(columns="channel_id")
+            )
+            for n in cid
+        ]
+    )
+
+    # expand lists
+    for n in list(df.columns):
+        df = df.explode(n)
+
+    # sort
+    cols = [n for k in [a, b] for n in df.columns if k in n]
+    df = df.reindex(cols, axis=1)
+
+    # store names
+    df = df.rename_axis(axis=1, columns=["cell_id", "channel_id"])
+
+    return (df, da)    
+
+def swap_channels(ds, df_cc):
+    subset = dict()
+    isubset = dict()
+    cn = list(df_cc.columns.names)    
+    gb = list(df_cc.index.names)
+    dc = [cn[0]]
+
+    a, b = df_cc.columns.get_level_values(cn[1]).to_list()
+
+    dx = []
+    for i0, gd0 in df_cc.groupby(
+        by=[g for g in gb if not g in dc], sort=False, as_index=True
+    ):
+        ss = {**subset, **dict(zip([g for g in gb if not g in dc], [[i] for i in i0]))}
+        dd = []
+        for _, gd1 in gd0.groupby(by=[tuple(dc + [b])]):
+
+            ai = gd1.loc[:, [tuple(dc + [a])]].values.ravel()
+            bi = gd1.loc[:, [tuple(dc + [b])]].values.ravel()
+
+            si = dict([tuple([*dc, [str(n) for n in ai.tolist()]])])
+            ci = dict([tuple([*dc, ("cell", [str(n) for n in bi.tolist()])])])
+            try:
+                da = ds.sel(ss)
+                for k, v in si.items():
+                    da = da.where(da[k].isin(v), drop=True)
+                da = da.assign_coords(**ci)
+                dd.append(da)
+            except:
+                pass
+
+        if dd:
+            dx.append(xr.concat(dd, dim="cell"))
+
+    ds = xr.merge(dx)
+    ds = xr_reindex(ds)
+    return ds
+
+
 def hello_world():
     import pandas as pd
     return( 
