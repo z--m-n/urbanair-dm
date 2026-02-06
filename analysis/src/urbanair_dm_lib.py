@@ -214,9 +214,10 @@ def unpack_zenodo_repository(
                 fpart = re.findall(r"^([A-Z]{3})\_(L\d).*?$", fname)
                 if fpart:
                     fout = Path(destination_path).resolve()
-                    if not Path(destination_path).resolve().is_dir():
+                    if not ( fout.is_dir() or fout.exists() ):
                         return False
-                    fout.mkdir(parents=True, exist_ok=True)
+                    
+                    fout.mkdir(parents=True, exist_ok=True)    
                     if fout.is_dir():
                         # print(fname)
                         # print((f"Copying files to:\n '{fout}'"))
@@ -299,7 +300,7 @@ def datastore(fn_dict):
                 ds1 = dx
                 dx.close()
             ds_list.append(ds1)
-        ds = xr.concat(ds_list, dim="time")
+        ds = xr.concat(ds_list, dim="time", coords='different', compat='equals', join='outer')
         ds = ds.drop_duplicates("time", keep="last")
         try:
             ds = xr_reindex(ds)  # reindex, prepare for merge
@@ -309,7 +310,7 @@ def datastore(fn_dict):
         ga_dict[fg] = ds.attrs
 
     # 2 of 2: Combine, merge and/or join
-    ds = xr.combine_by_coords(ds_dict.values(), combine_attrs="drop_conflicts")
+    ds = xr.combine_by_coords(ds_dict.values(), combine_attrs="drop_conflicts", join='outer')
     return ds, ga_dict, ds_dict
 
 
@@ -385,7 +386,6 @@ def ds_plot(plot_ds, **kwargs):
     fig = plot_da(da, **px_opts)
     return fig
 
-
 def translate_channels(ds, a="arome", b="system"):
 
     fun_ds_to_df = lambda x: (
@@ -413,8 +413,8 @@ def translate_channels(ds, a="arome", b="system"):
     # extract a/b channels
     da1 = da.sel(channel_id=ab_list.index(a))
     da2 = da.sel(channel_id=ab_list.index(b))
-    df1 = fun_ds_to_df(da1)
-    df2 = fun_ds_to_df(da2)
+    df1 = fun_ds_to_df(da1.copy())
+    df2 = fun_ds_to_df(da2.copy())
 
     cid = []
     for ig, dg in df2.groupby(level=gb):
@@ -433,8 +433,8 @@ def translate_channels(ds, a="arome", b="system"):
             )
             il = [n for n in ig]
             iv = getattr(il[2], "tolist", lambda: il[2])()
-            a_d = pd.Series(data=il[0:2] + [ix] , index=gb).to_dict()
-            b_d = pd.Series(data=il[0:2] + [iv] , index=gb).to_dict()
+            a_d = pd.Series(data=il[0:2] + [ix], index=gb).to_dict()
+            b_d = pd.Series(data=il[0:2] + [iv], index=gb).to_dict()
 
             cid.append({a: a_d, b: b_d})
 
@@ -461,9 +461,23 @@ def translate_channels(ds, a="arome", b="system"):
     df = df.reindex(cols, axis=1)
 
     # store names
-    df = df.rename_axis(axis=1, columns=["cell_id", "channel_id"])
+    lut1 = df.rename_axis(axis=1, columns=["cell_id", "channel_id"])
 
-    return (df, da)    
+    # more coordinates
+    df1 = lut1.drop([("cell_id", a)], axis=1).droplevel(1, axis=1).reset_index()
+    df2 = (
+        ds.coords.to_dataset()
+        .sel(isubset) # not isel
+        .sel(channel_id=ab_list.index(b))
+        .isel(time=0, time_delta=0)
+        .to_dataframe()
+        .reset_index()
+    )
+    lut2 = df1.merge(df2).set_index(lut1.index.names)
+    lut2 = lut2.drop(["time", "time_delta"], axis=1).set_index('bounds',append=True)
+
+    return (lut1, lut2, da)
+    
 
 def swap_channels(ds, df_cc):
     subset = dict()
@@ -502,6 +516,84 @@ def swap_channels(ds, df_cc):
     ds = xr.merge(dx)
     ds = xr_reindex(ds)
     return ds
+
+def swap_coords(ds, coords_lut, coord=('cell', 'cell_z_bounds')):
+    ix = coords_lut.index.names
+    idx = tuple([ ds[n].values.tolist() if n in ds.coords else [0] for n in ix ])
+    dc = coords_lut.loc[ idx ,:][coord[1]]
+    ds = xr_reindex(ds.assign_coords({coord[1] : (coord[0], dc )}))
+    return(ds)
+    
+def dataset_to_datatree_DWL(fd, **kwargs):
+
+    # dataset restructure and reduction needed for plots
+    def _plot_ds(ds):
+        # subset
+        subset = dict()
+        isubset = dict(
+            bounds=0,  # ... default boundary (0=left)
+            time_delta=0,  # ... default aggregation period (0=10min, 1=60min, ...)
+        )
+        # reduce to a 4-dimensional dataset
+        plot_ds = (
+            ds.sel(subset)
+            .isel(isubset)
+            .unstack(["cell"])
+            .reset_index(["station", "system"])
+            .stack(location=["station", "system"])
+            .dropna("location", how="all")
+            .dropna("cell_id", how="all")
+            .dropna("time", how="all")
+            .sortby("station_lat", ascending=False)
+            .transpose(..., "time")
+        )
+        return plot_ds
+
+    # consolidated production file
+    repo_path = str(Path(fd).parent)
+    repo_file = Path(fd).name
+    fn_list, fn_dict = input_files(
+        repo_path,
+        repo_file,
+    )
+    ds = xr_reindex(xr.open_dataset(fn_list[0], **kwargs))
+
+    # split per station
+    station_id = ds["station_id"].values.tolist()
+    dt = xr.DataTree.from_dict(
+        {k[2:]: _plot_ds(ds.sel(station_id=k)).isel(location=0) for k in station_id}
+    )
+    return dt
+
+def datatree_to_dataarray(dtd, dvd, key):
+    dad = {}
+    dad[key] = dtd[key][dvd[key]["z"]["path"]][dvd[key]["z"]["name"]]
+    dad[key] = dad[key].transpose(..., dvd[key]["x"]["name"])
+
+    if "subset" in dvd[key]['z']:
+        dad[key] = dad[key].sel(dvd[key]['z']["subset"])
+
+    for ax in ['x','y','z']:
+        if "swap_coord" in dvd[key][ax]:
+            scoord = dvd[key][ax]["swap_coord"]
+            # ... update the y-axis coord
+            if isinstance(scoord, tuple):
+                da = dad[key].dropna(scoord[0], how="all")
+                if "cell_z_bounds" in scoord:
+                    da["cell_z_bounds"] = da["cell_z_bounds"].mean(
+                        [n for n in ["time", "location"] if n in da.dims]
+                    )
+                da = da.set_index(dict([scoord])).rename(dict([scoord]))
+                da = da.isel(**{scoord[1]: ~da[scoord[1]].isnull()})
+                dad[key] = da
+
+    dad[key] = dad[key].sel(
+        {
+            dvd[key]["x"]["name"]: dvd[key]["x"]["subset"],
+            dvd[key]["y"]["name"]: dvd[key]["y"]["subset"],
+        }
+    )
+    return dad[key]    
 
 
 def hello_world():
