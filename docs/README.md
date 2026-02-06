@@ -25,8 +25,8 @@ python3 -m ipykernel install --user --name="urbanair312v1"
 
 For Paris simulations, the following examples are public:
 
-- `urbanair-dm/analysis/notebooks/streamline_stats_mwe.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/urbanair-dm/analysis/notebooks/streamline_stats_mwe.ipynb)
-- `urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb)
+- `urbanair-dm/analysis/notebooks/streamline_stats_mwe.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/analysis/notebooks/streamline_stats_mwe.ipynb)
+- `urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/analysis/notebooks/ceilometer_stats_mwe.ipynb)
 
 Further instructions are included in these Minimal Working Example notebooks.
 
