@@ -36,7 +36,25 @@ conda activate urbanair312v1
 jupyter notebook urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb
 ```
 
+## Analysis
+
+Example notebooks are public for lidar (ceilometer, Doppler) and comparison with models.
+
+```bash
+urbanair-dm-public
+└── analysis
+   ├── conf
+   │   └── environment.yml
+   ├── notebooks
+   │   ├── ceilometer_stats_mwe.ipynb
+   │   ├── comparison_stats.ipynb
+   │   └── streamline_stats_mwe.ipynb
+   └── src
+       └── urbanair_dm_lib.py
+```
+
 ## Metadata
-For Paris observations metadata, the examples are currenlty private.
+
+Example notebooks are currently not shared.
 
 ![](assets/metadb_locations.gif)
