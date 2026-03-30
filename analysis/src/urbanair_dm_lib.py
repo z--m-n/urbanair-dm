@@ -337,14 +337,14 @@ def plot_da(da, **kwargs):
     px_opts = {**px_opts, **kwargs}
 
     time_index = [ k.split('_')[0] == "time" for k in list(da.indexes) ] 
-    if len(da.indexes) == 2:       
+    if len(da.squeeze().dims) == 2 or len(da.squeeze().dims) == 3:       
         fig = px.imshow(
             da,
             origin="lower",
             aspect=None,
             **px_opts,
         )
-    elif len(da.indexes) == 1 and any(time_index):
+    elif len(da.squeeze().dims) == 1 and any(time_index):
         # mods to make plotly accept datetime[ns]
         da = da.drop_vars([n for n in da.coords if not n in da.indexes]).squeeze()
         time_var = list(da.indexes)[[i for i, n in enumerate(time_index) if n][0]]
@@ -841,81 +841,7 @@ def plot_ds_windrose(
         **fig_kwargs,
     )
     return fig
-
-def plot_dt_windrose(
-    dv_opts1,
-    dv_opts2,
-    station_id_list=["PACHEM", "PALUPD", "PAARBO"],
-    x_slice=slice("2023-08-21 00:00:00", "2023-08-21 23:59:59"),
-    y_slice=slice(150, 2150),
-    **kwargs,
-):
-    fh = {}
-    op = {}
-
-    for station_id in station_id_list:
-
-        # wind speed
-        dv_dict, px_opts, opts, _, _, _ = dataclass_defaults(
-            station_id=station_id, x_slice=x_slice, y_slice=y_slice
-        )
-
-        dv_dict1 = mergedeep.merge({}, dv_dict, dv_opts1)
-        dv_dict1 = {k: v for k, v in dv_dict1.items() if k in dv_opts1 or k in mv_keys}
-
-        dv_dict2 = mergedeep.merge({}, dv_dict, dv_opts2)
-        dv_dict2 = {k: v for k, v in dv_dict2.items() if k in dv_opts2 or k in mv_keys}
-
-        px_opts, pc_opts = plot_da_template("FF", reverse_colors=False)
-
-        try:
-            # A
-            dad1 = get_dataarray_dict(dv_dict1, dtd)
-            _, damd1 = get_masked_dataarray_dict(dv_dict1, dad1, mv_keys)
-
-            # B
-            dad2 = get_dataarray_dict(dv_dict2, dtd)
-            _, damd2 = get_masked_dataarray_dict(dv_dict2, dad2, mv_keys)
-        except:
-            continue
-
-        # AB
-        dsd = {}
-        for k in set(list(damd1.keys()) + list(damd2.keys())):
-            dsd[k] = xr.merge(
-                [
-                    *[
-                        da.to_dataset(name=dv_dict1[k]["z"]["name"])
-                        for k, da in damd1.items()
-                    ],
-                    *[
-                        da.to_dataset(name=dv_dict2[k]["z"]["name"])
-                        for k, da in damd2.items()
-                    ],
-                ],
-                compat="no_conflicts",
-            )
-
-        # variable translations
-        ops = {n: dv_dict1[k][n]["name"] for k, da in damd1.items() for n in ["x", "y"]}
-        ops["a"] = [dv_dict1[k][n]["name"] for k, da in damd1.items() for n in ["z"]][0]
-        ops["b"] = [dv_dict2[k][n]["name"] for k, da in damd2.items() for n in ["z"]][0]
-        ops["ann1"] = f"{station_id}"
-        ops["title"] = f""
-
-        for k, ds in dsd.items():
-            fig = plot_ds_windrose(
-                ds,
-                isubset={},
-                subset={},
-                **ops,
-                **kwargs,
-            )
-            fig.update_layout(height=500)
-            fh[k] = fig
-            op[k] = ops
-
-    return fh, op    
+  
     
 def translate_channels(ds, a="arome", b="system"):
 
