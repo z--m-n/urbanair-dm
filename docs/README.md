@@ -41,7 +41,7 @@ jupyter notebook urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb
 Example notebooks are public for lidar (ceilometer, Doppler) and comparison with models.
 
 ```bash
-urbanair-dm-public
+urbanair-dm
 └── analysis
    ├── conf
    │   └── environment.yml
