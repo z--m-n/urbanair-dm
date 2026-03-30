@@ -21,25 +21,21 @@ conda activate urbanair312v1
 python3 -m ipykernel install --user --name="urbanair312v1"
 ```
 
-## Data
+## Data / Analysis
 
-For Paris simulations, the following examples are public:
+Selected notebooks were made public:
 
 - `urbanair-dm/analysis/notebooks/streamline_stats_mwe.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/analysis/notebooks/streamline_stats_mwe.ipynb)
 - `urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/analysis/notebooks/ceilometer_stats_mwe.ipynb)
+- `urbanair-dm/analysis/notebooks/comparison_stats.ipynb` [link](https://github.com/z--m-n/urbanair-dm/blob/main/analysis/notebooks/comparison_stats.ipynb)
 
-Further instructions are included in these Minimal Working Example notebooks.
-
-Those can be accessed within a browser, for example,
+Instructions are included in these notebooks. Notebooks can be run within a python environment, for example,
 ```bash
 conda activate urbanair312v1
 jupyter notebook urbanair-dm/analysis/notebooks/ceilometer_stats_mwe.ipynb
 ```
 
-## Analysis
-
-Example notebooks are public for lidar (ceilometer, Doppler) and comparison with models.
-
+Note that additional files may be needed:
 ```bash
 urbanair-dm
 └── analysis
